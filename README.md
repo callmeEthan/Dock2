@@ -12,7 +12,7 @@ Improved with some extra feature, As usual I have optimized it as much as possib
 ## Installation
 Require rainmeter 4+ and windows 10.  
 Download rainmeter at https://www.rainmeter.net/.  
-Download and install [skin file](https://github.com/callmeEthan/Dock2/releases/download/v1.0/Another.Dock_1.0.rmskin)
+Download and install [skin file](https://github.com/callmeEthan/Dock2/releases/download/v1.0/Dock.2_v1.02.rmskin)
 
 ## Usage
 * Right click anywhere and choose toggle edit to switch to edit mode

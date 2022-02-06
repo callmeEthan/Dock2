@@ -5,6 +5,8 @@ MouseLeaveAction=[!CommandMeasure Animate "highlight(0)"][!CommandMeasure Animat
 Update=-1
 SkinWidth=((#direction#=3)  || (#direction#=4) ? (#expand#*#size#) : (#TotalGame#*(#size#+#space#)+#expand#*#size#))
 SkinHeight=((#direction#=3) || (#direction#=4) ? (#TotalGame#*(#size#+#space#)+#expand#*#size#) : (#expand#*#size#))
+;BackgroundMode=2
+;SolidColor=255,0,0,1
 
 
 RightMouseUpAction=!Execute [!SkinCustomMenu]
@@ -12,14 +14,16 @@ ContextTitle=Toggle edit
 ContextAction=[!CommandMeasure "Animate" "toggle_edit()"]
 ContextTitle2=Remove icon
 ContextAction2=[!CommandMeasure "Animate" "remove_icon()"]
-ContextTitle3=---
-ContextTitle4=Setting file
-ContextAction4=["#CURRENTPATH#\Settings.inc"]
-ContextTitle5=List file
-ContextAction5=["#Applist#"]
-ContextTitle6=---
-ContextTitle7=Rainmeter Menu
-ContextAction7=[!SkinMenu]
+ContextTitle3=Rename icon
+ContextAction3=[!CommandMeasure "Animate" "rename_icon()"]
+ContextTitle4=---
+ContextTitle5=Setting file
+ContextAction5=["#CURRENTPATH#\Settings.inc"]
+ContextTitle6=List file
+ContextAction6=["#Applist#"]
+ContextTitle7=---
+ContextTitle8=Rainmeter Menu
+ContextAction8=[!SkinMenu]
 
 [Variables]
 Edit_mode=0

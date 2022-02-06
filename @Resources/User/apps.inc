@@ -4,22 +4,27 @@ Directory=#@#App\
 
 Gamecover1=firefox.png
 Gamedir1=["C:\Program Files\Mozilla Firefox\firefox.exe"]
-;Gamedir1=C:\Program Files\Mozilla Firefox\firefox.exe
+Gamename1=Firefox
 
 Gamecover2=setting.png
 Gamedir2=ms-settings:
+Gamename2=Settings
 
 Gamecover3=steam.png
 Gamedir3=["C:\Program Files (x86)\Steam\steam.exe"]
+Gamename3=Steam
 
 Gamecover4=discord.png
 Gamedir4=["C:\Users\Ethan\AppData\Local\Discord\Update.exe"]
+Gamename4=Discord
 
 Gamecover5=photoshop.png
 Gamedir5=["C:\Program Files\Adobe\Adobe Photoshop CS6 (64 Bit)\Photoshop.exe"]
+Gamename5=Photoshop
 
 Gamecover6=premiere.png
 Gamedir6=["C:\Program Files\Adobe\Adobe Premiere Pro CC 2017\Adobe Premiere Pro.exe"]
+Gamename6=Premiere Pro
 
 Gamecover7=premiere.png
 Gamedir7=["C:\Program Files\Adobe\Adobe Premiere Pro CC 2017\Adobe Premiere Pro.exe"]

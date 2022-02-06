@@ -2,8 +2,8 @@ function Initialize()
 	count = tonumber(SKIN:GetVariable('TotalGame'))
 	skinwidth = tonumber(SKIN:GetVariable('CURRENTCONFIGWIDTH'))
 	skinheight = tonumber(SKIN:GetVariable('CURRENTCONFIGHEIGHT'))
-	divider = SKIN:GetVariable('divider')
-	direction = tonumber(SKIN:GetVariable('direction'))
+	divider = SKIN:GetVariable('divider',5)
+	direction = tonumber(SKIN:GetVariable('direction',0))
 	if direction==1 then
 		vertical = 0
 		direction = 1
@@ -21,13 +21,14 @@ function Initialize()
 	hide = 0
 	show = 0
 	swap = 0
-	space = tonumber(SKIN:GetVariable('space'))
-	width=tonumber(SKIN:GetVariable('size'))
-	height=tonumber(SKIN:GetVariable('size'))
-	padding=tonumber(SKIN:GetVariable('padding'))
-	expand=tonumber(SKIN:GetVariable('expand'))
+	space = tonumber(SKIN:GetVariable('space',0))
+	width=tonumber(SKIN:GetVariable('size',50))
+	height=tonumber(SKIN:GetVariable('size',50))
+	padding=tonumber(SKIN:GetVariable('padding',0))
+	expand=tonumber(SKIN:GetVariable('expand',2))
+	focus = tonumber(SKIN:GetVariable('focus',1))
 	select=0
-	hideicon=tonumber(SKIN:GetVariable('autohide'))
+	hideicon=tonumber(SKIN:GetVariable('autohide',0))
 	SKIN:Bang("!SetOption","Icon"..count+1,"ImageName","#@#App\\new.png")
 	SKIN:Bang('!SetVariable','Gamedir'..count+1,'[!CommandMeasure "Animate" "add_icon()"]')
 	edit = 0
@@ -40,6 +41,7 @@ function Initialize()
 	xto = {}
 	yto = {}
 	bw = 0
+	meter_name=SKIN:GetMeter('MeterName')
 	if vertical == 1 then
 	if direction < 0 then start = -height else start = skinwidth end
 	for i=1, count+1 do
@@ -86,6 +88,8 @@ function animate()
 			y[i]=(y[i]-((y[i]-yto[i])/(divider)))
 			meter[i]:SetX(x[i])
 			meter[i]:SetY(y[i])
+			meter_name:SetX(x[select]+(w[i]+padding)/2)
+			meter_name:SetY(yto[select]+height*expand)
 		else
 			w[i]=(w[i]-((w[i]-(width-padding))/(divider)))
 			h[i]=(h[i]-((h[i]-(height-padding))/(divider)))
@@ -232,6 +236,14 @@ function highlight(i)
 	if edit == 0 then
 		SKIN:Bang("!CommandMeasure", "Animation", "Stop 2")
 		select = i
+		local n=SKIN:GetVariable("Gamename"..i)
+		if n~=nil then 
+			SKIN:Bang("!SetOption", "MeterName","Text", "#Gamename"..i.."#")
+			SKIN:Bang("!UpdateMeter", "MeterName")
+			SKIN:Bang("!ShowMeter","MeterName")
+		else
+			SKIN:Bang("!HideMeter","MeterName")
+		end
 		update()
 	end
 	
@@ -315,6 +327,21 @@ function remove_icon()
 	SKIN:Bang("!Refresh")
 end
 
+function rename_icon(i,n)
+	if i==nil then
+		SKIN:Bang("!WriteKeyValue", "Variables", "Parent", "#CURRENTCONFIG#", "#ROOTCONFIGPATH#\\Debug\\rename.ini")
+		SKIN:Bang("!WriteKeyValue", "Variables", "Entry", "Gamename"..edit_entry, "#ROOTCONFIGPATH#\\Debug\\rename.ini")
+		SKIN:Bang("!WriteKeyValue", "Variables", "Default", SKIN:GetVariable("Gamename"..edit_entry, ""), "#ROOTCONFIGPATH#\\Debug\\rename.ini")
+		SKIN:Bang("!ActivateConfig",  "#ROOTCONFIG#\\Debug", "rename.ini")
+		SKIN:Bang("!Move",SKIN:GetX(),SKIN:GetY()+SKIN:GetH(),"#ROOTCONFIG#\\Debug")
+	else
+		SKIN:Bang("!WriteKeyValue", "Variables", i, n, "#Applist#")
+		SKIN:Bang("!SetVariable", i, n)
+		SKIN:Bang("!UpdateMeterGroup", "Icons")
+		SKIN:Bang("!Redraw")
+	end
+end
+
 function interact(index)
 	if edit == 1 and index <= count then
 		if swap == 0 then select=index else select=0 end
@@ -388,22 +415,28 @@ function sub_menu(command,index)
 	local d=tonumber(SKIN:GetVariable('direction'))
 	if d==1 then
 		xstart=SKIN:GetVariable('CURRENTCONFIGX') + xto[index] + width*expand/2
-		ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight/2 + height/2
+		if focus==1 then ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight/2 + height/2
+		else ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight/2 - height/2 end
 	elseif d==2 then
 		xstart=SKIN:GetVariable('CURRENTCONFIGX') + xto[index] + width*expand/2
-		ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight/2 - height/2
+		if focus==1 then ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight/2 - height/2
+		else ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight/2 + height/2 end
 	elseif d==3 then
-		xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth/2 + width/2
+		if focus==1 then xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth/2 + width/2
+		else xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth/2 - width/2 end
 		ystart=SKIN:GetVariable('CURRENTCONFIGY') + yto[index] + height*expand/2
 	else	
-		xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth/2 - width/2
+		if focus == 1 then xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth/2 - width/2
+		else xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth/2 + width/2 end
 		ystart=SKIN:GetVariable('CURRENTCONFIGY') + yto[index] + height*expand/2
 	end
 	SKIN:Bang("!Move" ,xstart ,ystart , "#ROOTCONFIG#\\".. string.sub (command, 9))
+	if focus == 1 then
 	SKIN:Bang("!ClickThrough", "1")
 	highlight(0)
 	set_state(2)
 	SKIN:Bang("!CommandMeasure", "Animation", "Execute 10")
+	end
 end
 
 function subroutine_init()
@@ -444,7 +477,7 @@ function timer(c)
 	elseif c=="timeout" then
 		subroutine_end()
 		set_state(2)
-	elseif c=="resume" then
+	elseif c=="resume" and focus==1 then
 		SKIN:Bang("!CommandMeasure", "Animation", "Execute 9")
 		if hideicon == 0 then set_state(1) end
 	end

@@ -1,10 +1,10 @@
-
 function Initialize()
 	count = tonumber(SKIN:GetVariable('TotalGame'))
 	skinwidth = tonumber(SKIN:GetVariable('CURRENTCONFIGWIDTH'))
 	skinheight = tonumber(SKIN:GetVariable('CURRENTCONFIGHEIGHT'))
 	divider = SKIN:GetVariable('divider',5)
 	direction = tonumber(SKIN:GetVariable('direction',0))
+	column = tonumber(SKIN:GetVariable('column',3))
 	if direction==1 then
 		vertical = 0
 		direction = 1
@@ -43,13 +43,14 @@ function Initialize()
 	xto = {}
 	yto = {}
 	bw = 0
+	bh = 0
 	meter_name=SKIN:GetMeter('MeterName')
 	if vertical == 1 then
-	if direction < 0 then start = -height else start = skinwidth end
+	if direction < 0 then start = 0 else start = skinwidth end
 	for i=1, count+1 do
 		meter[i]=SKIN:GetMeter('Icon'..i)
 		if meter[i] == nil then meter[i]=meter[0] end
-		xto[i]= -width+(skinwidth/2)+(skinwidth/2)*(1+direction)
+		xto[i]= (skinwidth/2)+(skinwidth/2)*(direction)
 		yto[i]= (skinheight/2)
 		y[i]= yto[i]
 		x[i]= xto[i]
@@ -59,11 +60,11 @@ function Initialize()
 		end
 	else
 	for i=1, count+1 do
-	if direction < 0 then start = -height else start = skinheight end
+	if direction < 0 then start = 0 else start = skinheight end
 		meter[i]=SKIN:GetMeter('Icon'..i)
 		if meter[i] == nil then meter[i]=meter[0] end
 		xto[i]= (skinwidth/2)
-		yto[i]= -height+(skinheight/2)+(skinheight/2)*(1+direction)
+		yto[i]= (skinheight/2)+(skinheight/2)*direction
 		y[i]= yto[i]
 		x[i]= xto[i]
 		w[i] = 1
@@ -80,6 +81,9 @@ function Initialize()
 	update_state()
 end
 
+function log(x)
+	SKIN:Bang("!Log", x)
+end
 
 function animate()
 	for i=1, show do
@@ -93,8 +97,13 @@ function animate()
 			meter_name:SetX(x[select]+(w[i]+padding)/2)
 			meter_name:SetY(yto[select]+height*expand+text_y)
 		else
-			w[i]=(w[i]-((w[i]-(width-padding))/(divider)))
-			h[i]=(h[i]-((h[i]-(height-padding))/(divider)))
+			if i>hide then
+				w[i]=(w[i]-((w[i]-(width-padding))/(divider)))
+				h[i]=(h[i]-((h[i]-(height-padding))/(divider)))
+			else
+				w[i]=(w[i]-((w[i]-0)/(divider)))
+				h[i]=(h[i]-((h[i]-0)/(divider)))
+			end
 			x[i]=(x[i]-((x[i]-xto[i])/(divider+2)))
 			y[i]=(y[i]-((y[i]-yto[i])/(divider)))
 			meter[i]:SetX(x[i])
@@ -105,19 +114,29 @@ function animate()
 		meter[i]:Show()
 	end
 	if bkg then
-		local w=(width+space)*(count-(count-show)+0.5)
+		local w=(width+space)*(count-(count-math.min(show,column))+0.5)
+		local h=(1+math.floor((show-1)/column))*(height+space)-space
 		if select>0 and space==0 then w = w+(expand-1)*width end
 		if state == 2 then w = 0 end
 		bw = bw - ((bw-w)/divider)
+		bh = bh - ((bh-h)/divider)
 		if vertical == 0 then
 			SKIN:Bang("!SetVariable", "bx", skinwidth/2-bw/2)
-			SKIN:Bang("!SetVariable", "by", ((expand-1)*width)/2)
+			if direction < 0 then
+				SKIN:Bang("!SetVariable", "by", (expand-1)*height/2+space)
+			else
+				SKIN:Bang("!SetVariable", "by", start-(expand-1)*height/2-bh-text_y)
+			end
 			SKIN:Bang("!SetVariable", "bw", bw)
-			SKIN:Bang("!SetVariable", "bh", bkgwidth)
+			SKIN:Bang("!SetVariable", "bh", bh)
 		else
-			SKIN:Bang("!SetVariable", "bx", skinwidth/2-bkgwidth/2)
+			if direction < 0 then
+				SKIN:Bang("!SetVariable", "bx", (expand-1)*height/2+space)
+			else
+				SKIN:Bang("!SetVariable", "bx", start-(expand-1)*height/2-bh )
+			end
 			SKIN:Bang("!SetVariable", "by", skinheight/2-bw/2)
-			SKIN:Bang("!SetVariable", "bw", bkgwidth)
+			SKIN:Bang("!SetVariable", "bw", bh)
 			SKIN:Bang("!SetVariable", "bh", bw)
 		end
 	end
@@ -142,6 +161,7 @@ function update_state()
 			show = show+1
 			update()
 			SKIN:Bang("!CommandMeasure", "Animation", "Execute 3")
+			-- if show % column == 0 then state = 3 end
 		else
 			SKIN:Bang("!Clickthrough",0)
 			timer("set")
@@ -153,12 +173,15 @@ function update_state()
 			update()
 			SKIN:Bang("!CommandMeasure", "Animation", "Execute 4")
 		end
-	else
+	elseif state == 2 then
 		if hide < count then
 			hide = hide + 1
 			update()
 			SKIN:Bang("!CommandMeasure", "Animation", "Execute 5")
 		end
+	else
+			SKIN:Bang("!CommandMeasure", "Animation", "Execute 3")
+			state = 0
 	end
 end
 
@@ -169,66 +192,94 @@ function update()
 end
 
 function update_vertical()
-	local xs = 0
-	if (select % 2 == 0) then xs = (show-select)/2 else xs = -(show-select)/2 end
-	local xx = (skinheight/2) - (show * (height+space) / 2) + space/2
-	local d = 1
-	if select == 0 then
-	for i=1, show do
-		if i <= hide then xto[i] = start else xto[i]=((expand-1)*height)/2 end
-		yto[i]=xx
-		xx=xx + ((height+space)*(show-i))*d
-		d = d*(-1)
-		end
-	else for i=1, show do
-		if i == select then 
-			xto[i]=0
-			yto[i]=xx - ((expand-1)*(height+space))/2
-		else
-			xto[i]=((expand-1)*height)/2
-			if -d*((show-i)/2)<xs then
-				yto[i]= xx - (expand-1)*height/2
-				else
-				yto[i]= xx + (expand-1)*height/2
+	local row = math.floor((show-1)/column)
+	for r=0, row do
+		local d = 1
+		local xx = 0
+		local xr = 0
+		local yr = 0
+		xr = show % column
+		if r < row or xr == 0 then xr=column end
+		xx = (skinheight/2) - (xr * (width+space) / 2) + space/2
+		if select == 0 then
+		for i=(r*column)+1, math.min((r+1)*column,show) do
+			if direction < 0 then yr =  space else yr=start-height end
+			yr = yr - ((expand-1)*width)/2*direction-(width+space)*(row-r)*direction
+			if i <= hide then
+				xto[i] = start + width*direction/4
+				yto[i] = (skinheight/2)
+			else
+				xto[i]=yr
+				yto[i]=xx
+				end
+			xx=xx + ((width+space)*(xr-(i % column)))*d
+			d = d*(-1)
 			end
-		end
-		if i <= hide then xto[i]=start end
-		xx=xx + ((height+space)*(show-i))*d
-		d = d*(-1)
-		end
+		else for i=(r*column)+1, math.min((r+1)*column,show) do
+			if direction < 0 then yr = space else yr=start-height end
+			yr = yr- ((expand-1)*width)/2*direction-(width+space)*(row-r)*direction 
+			if i <= hide then
+				xto[i] = start + width*direction/4
+				yto[i] = (skinheight/2)
+			else
+				if i == select then
+					xto[i]=yr - ((expand-1)*width)/2
+					yto[i]=xx - ((expand-1)*width)/2
+				else
+					xto[i]=yr
+					yto[i]=xx
+				end
+			end
+			xx=xx + ((width+space)*(xr-(i % column)))*d
+			d = d*(-1)
+			end
+	end
 	end
 end
 
 function update_horizonal()
-	local xs = 0
-	if (select % 2 == 0) then xs = (show-select)/2 else xs = -(show-select)/2 end
-	local xx = (skinwidth/2) - (show * (width+space) / 2) + space/2
-	local d = 1
-	if select == 0 then
-	for i=1, show do
-		if i <= hide then yto[i] = start else yto[i]=((expand-1)*width)/2 end
-		xto[i]=xx
-		xx=xx + ((width+space)*(show-i))*d
-		d = d*(-1)
-		end
-	else for i=1, show do
-		if i == select then 
-			yto[i]=0
-			xto[i]=xx - ((expand-1)*width)/2
+	local row = math.floor((show-1)/column)
+	for r=0, row do
+		local d = 1
+		local xx = 0
+		local xr = 0
+		local yr = 0
+		xr = show % column
+		if r < row or xr == 0 then xr=column end
+		xx = (skinwidth/2) - (xr * (width+space) / 2) + space/2
+		if select == 0 then
+		for i=(r*column)+1, math.min((r+1)*column,show) do
+			if direction < 0 then yr =  space else yr=start-height end
+			yr = yr - ((expand-1)*width)/2*direction-(width+space)*(row-r)*direction - text_y*(direction+1)/2
+			if i <= hide then
+				xto[i] = (skinwidth/2)
+				yto[i] = start + width*direction/4
 			else
-			yto[i]=((expand-1)*width)/2
-			if space > 0 then 
-			xto[i]=xx
-			elseif -d*((show-i)/2)<xs then
-				xto[i]= xx - (expand-1)*width/2
-				else
-				xto[i]= xx + (expand-1)*width/2
+				xto[i]=xx
+				yto[i]=yr
+				end
+			xx=xx + ((width+space)*(xr-(i % column)))*d
+			d = d*(-1)
 			end
-		end
-		if i <= hide then yto[i]=start end
-		xx=xx + ((width+space)*(show-i))*d
-		d = d*(-1)
-		end
+		else for i=(r*column)+1, math.min((r+1)*column,show) do
+			if direction < 0 then yr = space else yr=start-height end
+			yr = yr- ((expand-1)*width)/2*direction-(width+space)*(row-r)*direction - text_y*(direction+1)/2
+			if i <= hide then
+				xto[i] = (skinwidth/2)
+				yto[i] = start + width*direction/4
+			else
+				if i == select then
+					xto[i]=xx - ((expand-1)*width)/2
+					yto[i]=yr - ((expand-1)*width)/2
+				else
+					xto[i]=xx
+					yto[i]=yr
+				end
+			end
+			xx=xx + ((width+space)*(xr-(i % column)))*d
+			d = d*(-1)
+			end
+	end
 	end
 end
 
@@ -256,7 +307,7 @@ function toggle_edit(c)
 	if edit == 0 then
 		if state~=1 then set_state(1) end
 		edit = 1
-		show = count+1
+		show = count
 		hide = 0
 		select = 0
 		swap = 0
@@ -269,9 +320,8 @@ function toggle_edit(c)
 		SKIN:Bang("!SetOption", "Debug", "Text", "Edit enabled")
 		if c~=1 then
 		SKIN:Bang("!ActivateConfig", "#ROOTCONFIG#\\Debug", "debug.ini")
-		SKIN:Bang("!Move",SKIN:GetX(),SKIN:GetY()+SKIN:GetH(),"#ROOTCONFIG#\\Debug")
+		SKIN:Bang("!Move",SKIN:GetX(),SKIN:GetY()+SKIN:GetH(),"#ROOTCONFIG#\\Debug") 
 		end
-
 	else 
 		edit = 0
 		swap = 0
@@ -428,34 +478,26 @@ function sub_menu(command,index)
 	local d=tonumber(SKIN:GetVariable('direction'))
 	if d==1 then
 		xstart=SKIN:GetVariable('CURRENTCONFIGX') + xto[index] + width*expand/2
-		if focus==1 then ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight/2 + height/2
+		if focus==1 then ystart=SKIN:GetVariable('CURRENTCONFIGY') + yto[index] + h[index]
 		else
-		if tonumber(SKIN:GetVariable('snap',0))==0 then
-			ystart=SKIN:GetVariable('CURRENTCONFIGY')
-			else ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight/2 - height/2 end
+		ystart=SKIN:GetVariable('CURRENTCONFIGY')
 		end
 	elseif d==2 then
 		xstart=SKIN:GetVariable('CURRENTCONFIGX') + xto[index] + width*expand/2
-		if focus==1 then ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight/2 - height/2
+		if focus==1 then ystart=SKIN:GetVariable('CURRENTCONFIGY') + yto[index]
 		else
-		if tonumber(SKIN:GetVariable('snap',0))==0 then
-		ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight/2 + height
-		else ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight/2 + height/2 end
+		ystart=SKIN:GetVariable('CURRENTCONFIGY') + skinheight
 		end
 	elseif d==3 then
-		if focus==1 then xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth/2 + width/2
+		if focus==1 then xstart=SKIN:GetVariable('CURRENTCONFIGX') + xto[index] + w[index]
 		else
-		if tonumber(SKIN:GetVariable('snap',0))==0 then
-			xstart=SKIN:GetVariable('CURRENTCONFIGX') 
-			else xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth/2 - width/2 end
+		xstart=SKIN:GetVariable('CURRENTCONFIGX') 
 		end
 		ystart=SKIN:GetVariable('CURRENTCONFIGY') + yto[index] + height*expand/2
 	else	
-		if focus == 1 then xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth/2 - width/2
+		if focus == 1 then xstart=SKIN:GetVariable('CURRENTCONFIGX') + xto[index]
 		else
-		if tonumber(SKIN:GetVariable('snap',0))==0 then
-			xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth/2 + width
-			else xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth/2 + width/2 end
+		xstart=SKIN:GetVariable('CURRENTCONFIGX') + skinwidth
 		end
 		ystart=SKIN:GetVariable('CURRENTCONFIGY') + yto[index] + height*expand/2
 	end
@@ -475,13 +517,13 @@ function subroutine_init()
 		local skiny=tonumber(SKIN:GetVariable('CURRENTCONFIGY'))
 		SKIN:Bang("!KeepOnScreen", 0)
 		if d==1 then
-			SKIN:Bang("!Move", skinx-(skinwidth/2), skiny-skinheight/2-height/2)
+			SKIN:Bang("!Move", skinx-(skinwidth/2), skiny-skinheight+space)
 		elseif d==2 then
-			SKIN:Bang("!Move", skinx-(skinwidth/2), skiny-skinheight/2+height/2)
+			SKIN:Bang("!Move", skinx-(skinwidth/2), skiny-space)
 		elseif d==3 then
-			SKIN:Bang("!Move", skinx-skinwidth/2-width/2, skiny-(skinheight/2))
+			SKIN:Bang("!Move", skinx-skinwidth+space, skiny-(skinheight/2))
 		else
-			SKIN:Bang("!Move", skinx-skinwidth/2+width/2, skiny-(skinheight/2))
+			SKIN:Bang("!Move", skinx-space, skiny-(skinheight/2))
 		end
 	SKIN:Bang("!WriteKeyValue", "Variables", "is_subroutine", 2, "#CURRENTPATH#\\#CURRENTFILE#")
 	end

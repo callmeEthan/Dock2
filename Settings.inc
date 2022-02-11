@@ -12,7 +12,7 @@ background=0,0,0,150
 
 ;background_width=60
 
-divider=4
+divider=5
 ;how slow animation calculation should be (increase to make animation longer)
 
 animspd_init=150
@@ -29,11 +29,13 @@ step=24
 expand=2
 ;how big icon expand when highlighted (size multiplier)
 
-padding=15
+padding=10
 ;increase to make icon smaller
 
-focus=0
+focus=1
 ;Whether to hide icons when a submenu is open
+snap=1
+;Whether to snap sub-menu position to dock (when focus is false)
 
 autohide=0
 ;Whether to hide icon after period of time
@@ -47,7 +49,11 @@ cooldown=1000
 direction=1
 ;direction of the skin, 1:up  2:down  3:left  4:right
 
+column=3
+;How many app column to display
+
 
 FontColor=255,255,255
 FontSize=20
+TextY=5
 ;Color and size icon name

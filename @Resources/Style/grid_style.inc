@@ -3,28 +3,30 @@ OnRefreshAction=[!CommandMeasure Animate "set_state(0)"][!ShowMeter Background]
 MouseOverAction=[!CommandMeasure Animate "set_state(1)"]
 MouseLeaveAction=[!CommandMeasure Animate "highlight(0)"][!CommandMeasure Animate "timer('set')"]
 Update=-1
-SkinWidth=((#direction#=3)  || (#direction#=4) ? (#expand#*#size#) : (#TotalGame#*(#size#+#space#)+#expand#*#size#))
-SkinHeight=((#direction#=3) || (#direction#=4) ? (#TotalGame#*(#size#+#space#)+#expand#*#size#+#TextY#) : (#expand#*#size#+#TextY#))
-DynamicWindowSize=0
+SkinWidth=((#direction#=3)  || (#direction#=4) ? ((ceil(#TotalGame#/#column#)+#Expand#-1)*#size#+(#space#*ceil(#TotalGame#/#column#)) ) : ((min(#TotalGame#,#column#)+#Expand#-0.5)*(#size#+#space#) ))
+SkinHeight=((#direction#=3) || (#direction#=4) ? ((min(#TotalGame#,#column#)+#Expand#-0.5)*(#size#+#space#) ) : ((ceil(#TotalGame#/#column#)+#Expand#-1)*#size#+#TextY#+(#space#*ceil(#TotalGame#/#column#)) ) )
 ;BackgroundMode=2
 ;SolidColor=255,0,0,200
+DynamicWindowSize=0
 
 
 RightMouseUpAction=!Execute [!SkinCustomMenu]
 ContextTitle=Toggle edit
 ContextAction=[!CommandMeasure "Animate" "toggle_edit()"]
-ContextTitle2=Remove icon
-ContextAction2=[!CommandMeasure "Animate" "remove_icon()"]
-ContextTitle3=Rename icon
-ContextAction3=[!CommandMeasure "Animate" "rename_icon()"]
-ContextTitle4=---
-ContextTitle5=Setting file
-ContextAction5=["#CURRENTPATH#\Settings.inc"]
-ContextTitle6=List file
-ContextAction6=["#Applist#"]
-ContextTitle7=---
-ContextTitle8=Rainmeter Menu
-ContextAction8=[!SkinMenu]
+ContextTitle2=Add icon
+ContextAction2=[!CommandMeasure "Animate" "add_icon()"]
+ContextTitle3=Remove icon
+ContextAction3=[!CommandMeasure "Animate" "remove_icon()"]
+ContextTitle4=Rename icon
+ContextAction4=[!CommandMeasure "Animate" "rename_icon()"]
+ContextTitle5=---
+ContextTitle6=Setting file
+ContextAction6=["#CURRENTPATH#\Settings.inc"]
+ContextTitle7=List file
+ContextAction7=["#Applist#"]
+ContextTitle8=---
+ContextTitle9=Rainmeter Menu
+ContextAction9=[!SkinMenu]
 
 [Variables]
 Edit_mode=0
@@ -37,11 +39,11 @@ bh=0
 [ScriptRepeatIcon]
 Measure=Script
 ScriptFile=#@#RepeatSection.lua
-ReadFile=#@#Style\classic_layout.inc
-WriteFile=#@#Style\classic_meter.inc
+ReadFile=#@#Style\grid_layout.inc
+WriteFile=#@#Style\grid_meter.inc
 Sub=Repeat
 Index=1
-Limit=(#TotalGame#+1)
+Limit=(#TotalGame#)
 
 
 [LayoutIcon]
@@ -92,7 +94,7 @@ Disabled=1
 
 [Animate]
 Measure=Script
-ScriptFile=#@#Style\classic_anim.lua
+ScriptFile=#@#Style\grid_anim.lua
 
 [Animation]
 Measure=Plugin

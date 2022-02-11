@@ -1,10 +1,10 @@
 [Variables]
-style=classic
+style=grid
 
 size=70
 ;icon size
 
-space=0
+space=15
 ;space between icon, if other than 0 the icon will fix in their position
 
 background=0,0,0,150
@@ -26,7 +26,7 @@ update_rate=15
 step=24
 ;how many update to draw when interacted (increase for longer animation)
 
-expand=2
+expand=1.6
 ;how big icon expand when highlighted (size multiplier)
 
 padding=15
@@ -47,7 +47,10 @@ cooldown=1000
 direction=1
 ;direction of the skin, 1:up  2:down  3:left  4:right
 
+column=3
+;How many app column to display
 
 FontColor=255,255,255
 FontSize=20
+TextY=15
 ;Color and size icon name

@@ -21,6 +21,7 @@ Download and install [skin file](https://github.com/callmeEthan/Dock2/releases/d
 * Hover over an icon, right click and select Remove icon to remove selected from list.
   
 You could edit list manually by edit list file in @Resource\User  
+Don't try to put sub-menu inside a sub-menu, I haven't code that far yet! try as your own risk.
 
 ## Credit
 Plugin included:  

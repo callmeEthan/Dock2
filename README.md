@@ -1,4 +1,4 @@
-# Interactive Dock
+# Interactive Dock 2
 Improved version of interactive dock for rainmeter.   
 Improved with some extra feature, As usual I have optimized it as much as possible (only animate when interact with), use it when you have performance to spare.  
 

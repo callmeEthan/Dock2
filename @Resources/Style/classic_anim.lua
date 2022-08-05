@@ -1,4 +1,3 @@
-
 function Initialize()
 	count = tonumber(SKIN:GetVariable('TotalGame'))
 	skinwidth = tonumber(SKIN:GetVariable('CURRENTCONFIGWIDTH'))
@@ -29,9 +28,12 @@ function Initialize()
 	expand=tonumber(SKIN:GetVariable('expand',2))
 	focus = tonumber(SKIN:GetVariable('focus',1))
 	text_y = tonumber(SKIN:GetVariable('TextY',0))
+	text_w = tonumber(SKIN:GetVariable('TextW',0))
 	select=0
+	ConfigMeasure = SKIN:GetMeasure('ActiveConfig')
 	hideicon=tonumber(SKIN:GetVariable('autohide',0))
 	SKIN:Bang("!SetOption","Icon"..count+1,"ImageName","#@#App\\new.png")
+	SKIN:Bang("!SetOption","Icon"..count+1,"ImageTint",SKIN:GetVariable("FontColor"))
 	SKIN:Bang('!SetVariable','Gamedir'..count+1,'[!CommandMeasure "Animate" "add_icon()"]')
 	edit = 0
 	edit_entry = 0
@@ -72,12 +74,17 @@ function Initialize()
 		end
 	end
 	SKIN:Bang("!Clickthrough",1)
+	SKIN:Bang("!ZPos", 1)
 	bkg=SKIN:GetVariable("background")
 	if bkg~=nil then
 		SKIN:Bang("!ShowMeter", "MeterBackground")
 		bkgwidth=SKIN:GetVariable("background_width",width)
 	end
 	update_state()
+end
+
+function log(x)
+	SKIN:Bang("!Log", x)
 end
 
 
@@ -123,6 +130,57 @@ function animate()
 	end
 end
 
+function force_animate()
+	if state == 0 then show = count
+	elseif state == 1 then hide = 0
+	else hide = count end
+	SKIN:Bang("!CommandMeasure", "Animation", "Stop 1")
+	SKIN:Bang("!CommandMeasure", "Animation", "Stop 2")
+	SKIN:Bang("!CommandMeasure", "Animation", "Stop 3")
+	SKIN:Bang("!CommandMeasure", "Animation", "Stop 4")
+	SKIN:Bang("!CommandMeasure", "Animation", "Stop 5")
+	for i=1, show do
+		if i == select then
+			w[i]=width*expand-padding
+			h[i]=height*expand-padding
+			x[i]=xto[i]
+			y[i]=y[to]
+			meter[i]:SetX(x[i])
+			meter[i]:SetY(y[i])
+			meter_name:SetX(x[select]+(w[i]+padding)/2)
+			meter_name:SetY(yto[select]+height*expand+text_y)
+		else
+			w[i]=width-padding
+			h[i]=height-padding
+			x[i]=xto[i]
+			y[i]=yto[i]
+			meter[i]:SetX(x[i])
+			meter[i]:SetY(y[i])
+		end
+		SKIN:Bang("!SetOption","Icon"..i, "W", w[i])
+		SKIN:Bang("!SetOption","Icon"..i, "H", h[i])
+		meter[i]:Show()
+	end
+	if bkg then
+		local w=(width+space)*(count-(count-show)+0.5)
+		if select>0 and space==0 then w = w+(expand-1)*width end
+		if state == 2 then w = 0 end
+		bw = bw - ((bw-w)/divider)
+		if vertical == 0 then
+			SKIN:Bang("!SetVariable", "bx", skinwidth/2-bw/2)
+			SKIN:Bang("!SetVariable", "by", ((expand-1)*width)/2)
+			SKIN:Bang("!SetVariable", "bw", bw)
+			SKIN:Bang("!SetVariable", "bh", bkgwidth)
+		else
+			SKIN:Bang("!SetVariable", "bx", skinwidth/2-bkgwidth/2)
+			SKIN:Bang("!SetVariable", "by", skinheight/2-bw/2)
+			SKIN:Bang("!SetVariable", "bw", bkgwidth)
+			SKIN:Bang("!SetVariable", "bh", bw)
+		end
+	end
+	SKIN:Bang("!CommandMeasure", "Animation", "Execute 9")
+end
+
 
 function set_state(i)
 	if edit == 1 then return end
@@ -162,6 +220,8 @@ function update_state()
 	end
 end
 
+
+
 function update()
 	if vertical == 1 then update_vertical() else update_horizonal() end
 	SKIN:Bang("!CommandMeasure", "Animation", "Stop 1")
@@ -175,7 +235,7 @@ function update_vertical()
 	local d = 1
 	if select == 0 then
 	for i=1, show do
-		if i <= hide then xto[i] = start else xto[i]=((expand-1)*height)/2 end
+		if i <= hide then xto[i] = start else xto[i]= text_w/2 + ((expand-1)*height)/2 end
 		yto[i]=xx
 		xx=xx + ((height+space)*(show-i))*d
 		d = d*(-1)
@@ -348,7 +408,8 @@ function rename_icon(i,n)
 	end
 end
 
-function interact(index)
+function interact(index,dismiss)
+	if dismiss == nul then dismiss = 1 end
 	if edit == 1 and index <= count then
 		if swap == 0 then select=index else select=0 end
 		update()
@@ -363,6 +424,10 @@ function interact(index)
 		command = string.sub(command,8)
 		SKIN:Bang(command)
 		return
+	elseif string.match(command, 'gamehub:') then 
+		command = string.sub(command,9)
+		gamehub(command)
+		return
 	elseif string.match(command, 'submenu:') then 
 		sub_menu(command,index)
 		return
@@ -374,10 +439,26 @@ function interact(index)
 	else
 		SKIN:Bang('"'..command..'"')
 	end
-	subroutine_end()
+	if tonumber(dismiss) == 0 then SKIN:Bang("!ZPos", 2) end
+	if hideicon == 1 and tonumber(dismiss) == 1 then
+		highlight(0)
+		subroutine_end()
+		set_state(2)
+		SKIN:Bang("!CommandMeasure", "Animation", "Execute 9")
+	end
+end
+
+function gamehub(cfg)
 	highlight(0)
-	if hideicon == 1 then set_state(2) end
-	SKIN:Bang("!CommandMeasure", "Animation", "Execute 9")
+	if tonumber(dismiss) == 0 then SKIN:Bang("!ZPos", 2) end
+	if hideicon == 1 and tonumber(dismiss) == 1 then
+		subroutine_end()
+		set_state(2)
+		SKIN:Bang("!CommandMeasure", "Animation", "Execute 9")
+	end
+	SKIN:Bang("!CommandMeasure", "Animation", "Execute 13")
+	SKIN:Bang("!WriteKeyValue", "Variables", "filelayout", "page_game.inc", "#SKINSPATH#\\GameHub 2\\@Resources\\Settings.inc")
+	SKIN:Bang("!ActivateConfig", "GameHub 2", "GameHUB.ini")
 end
 
 function swap_icon(a,b)
@@ -419,6 +500,11 @@ function sub_menu(command,index)
 		command = command:gsub('%b[]', '')
 		cfg = s
 	end
+	SKIN:Bang('!SetVariable', 'check_config' , '#ROOTCONFIG#\\'.. string.sub (command, 9))
+	SKIN:Bang('!UpdateMeasure', 'ActiveConfig')
+	is_active = ConfigMeasure:GetValue()
+	if is_active == 1 then return end
+
 	SKIN:Bang("!WriteKeyValue", "Variables", "is_subroutine", "1", string.sub (command, 9) .. "\\"..cfg)
 	SKIN:Bang("!WriteKeyValue", "Variables", "Parent", "#CURRENTCONFIG#", string.sub (command, 9) .. "\\"..cfg)
 	SKIN:Bang("!WriteKeyValue", "Variables", "direction", SKIN:GetVariable('direction'), string.sub (command, 9) .. "\\Settings.inc")

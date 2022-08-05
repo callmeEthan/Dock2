@@ -1,7 +1,8 @@
 [Icon1]
 Meter=Image
 ImageName=#@#App\#Gamecover1#
-LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(1)"]
+LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(1,1)"]
+MiddleMouseDownAction=!Execute [!CommandMeasure Animate "interact(1,0)"]
 MouseOverAction=[!CommandMeasure "Animate" "highlight(1)"]
 MeterStyle=LayoutIcon
 
@@ -20,7 +21,8 @@ Disabled=1
 [Icon2]
 Meter=Image
 ImageName=#@#App\#Gamecover2#
-LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(2)"]
+LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(2,1)"]
+MiddleMouseDownAction=!Execute [!CommandMeasure Animate "interact(2,0)"]
 MouseOverAction=[!CommandMeasure "Animate" "highlight(2)"]
 MeterStyle=LayoutIcon
 
@@ -39,7 +41,8 @@ Disabled=1
 [Icon3]
 Meter=Image
 ImageName=#@#App\#Gamecover3#
-LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(3)"]
+LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(3,1)"]
+MiddleMouseDownAction=!Execute [!CommandMeasure Animate "interact(3,0)"]
 MouseOverAction=[!CommandMeasure "Animate" "highlight(3)"]
 MeterStyle=LayoutIcon
 
@@ -58,7 +61,8 @@ Disabled=1
 [Icon4]
 Meter=Image
 ImageName=#@#App\#Gamecover4#
-LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(4)"]
+LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(4,1)"]
+MiddleMouseDownAction=!Execute [!CommandMeasure Animate "interact(4,0)"]
 MouseOverAction=[!CommandMeasure "Animate" "highlight(4)"]
 MeterStyle=LayoutIcon
 
@@ -77,7 +81,8 @@ Disabled=1
 [Icon5]
 Meter=Image
 ImageName=#@#App\#Gamecover5#
-LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(5)"]
+LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(5,1)"]
+MiddleMouseDownAction=!Execute [!CommandMeasure Animate "interact(5,0)"]
 MouseOverAction=[!CommandMeasure "Animate" "highlight(5)"]
 MeterStyle=LayoutIcon
 
@@ -96,7 +101,8 @@ Disabled=1
 [Icon6]
 Meter=Image
 ImageName=#@#App\#Gamecover6#
-LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(6)"]
+LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(6,1)"]
+MiddleMouseDownAction=!Execute [!CommandMeasure Animate "interact(6,0)"]
 MouseOverAction=[!CommandMeasure "Animate" "highlight(6)"]
 MeterStyle=LayoutIcon
 
@@ -115,7 +121,8 @@ Disabled=1
 [Icon7]
 Meter=Image
 ImageName=#@#App\#Gamecover7#
-LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(7)"]
+LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(7,1)"]
+MiddleMouseDownAction=!Execute [!CommandMeasure Animate "interact(7,0)"]
 MouseOverAction=[!CommandMeasure "Animate" "highlight(7)"]
 MeterStyle=LayoutIcon
 
@@ -134,7 +141,8 @@ Disabled=1
 [Icon8]
 Meter=Image
 ImageName=#@#App\#Gamecover8#
-LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(8)"]
+LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(8,1)"]
+MiddleMouseDownAction=!Execute [!CommandMeasure Animate "interact(8,0)"]
 MouseOverAction=[!CommandMeasure "Animate" "highlight(8)"]
 MeterStyle=LayoutIcon
 
@@ -148,23 +156,4 @@ OnEnterAction=[!SetVariable Edit 8]
 OnDropAction=[!SetVariable File "$File$"][!CommandMeasure Animate "drop_file(8)"]
 Group=DropGroup
 Bounds = Icon8
-Disabled=1
-
-[Icon9]
-Meter=Image
-ImageName=#@#App\#Gamecover9#
-LeftMouseUpAction=!Execute [!CommandMeasure Animate "interact(9)"]
-MouseOverAction=[!CommandMeasure "Animate" "highlight(9)"]
-MeterStyle=LayoutIcon
-
-[DragNDropChild9]
-Measure=Plugin
-Plugin=Drag&Drop
-Parent=DragNDropParent
-DynamicVariables=1
-Action=Path
-OnEnterAction=[!SetVariable Edit 9]
-OnDropAction=[!SetVariable File "$File$"][!CommandMeasure Animate "drop_file(9)"]
-Group=DropGroup
-Bounds = Icon9
 Disabled=1

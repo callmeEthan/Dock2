@@ -29,6 +29,7 @@ function Initialize()
 	expand=tonumber(SKIN:GetVariable('expand',2))
 	focus = tonumber(SKIN:GetVariable('focus',1))
 	text_y = tonumber(SKIN:GetVariable('TextY',0))
+	text_w = tonumber(SKIN:GetVariable('TextW',0))
 	select=0
 	hideicon=tonumber(SKIN:GetVariable('autohide',0))
 	SKIN:Bang("!SetOption","Icon"..count+1,"ImageName","#@#App\\new.png")
@@ -73,6 +74,7 @@ function Initialize()
 		end
 	end
 	SKIN:Bang("!Clickthrough",1)
+	SKIN:Bang("!ZPos", 2)
 	bkg=SKIN:GetVariable("background")
 	if bkg~=nil then
 		SKIN:Bang("!ShowMeter", "MeterBackground")
@@ -131,9 +133,9 @@ function animate()
 			SKIN:Bang("!SetVariable", "bh", bh)
 		else
 			if direction < 0 then
-				SKIN:Bang("!SetVariable", "bx", (expand-1)*height/2+space)
+				SKIN:Bang("!SetVariable", "bx", (expand-1)*height/2+space - text_w*direction/2)
 			else
-				SKIN:Bang("!SetVariable", "bx", start-(expand-1)*height/2-bh )
+				SKIN:Bang("!SetVariable", "bx", start-(expand-1)*height/2-bh  - text_w*direction/2)
 			end
 			SKIN:Bang("!SetVariable", "by", skinheight/2-bw/2)
 			SKIN:Bang("!SetVariable", "bw", bh)
@@ -204,7 +206,7 @@ function update_vertical()
 		if select == 0 then
 		for i=(r*column)+1, math.min((r+1)*column,show) do
 			if direction < 0 then yr =  space else yr=start-height end
-			yr = yr - ((expand-1)*width)/2*direction-(width+space)*(row-r)*direction
+			yr = yr - text_w*direction/2 - ((expand-1)*width)/2*direction-(width+space)*(row-r)*direction
 			if i <= hide then
 				xto[i] = start + width*direction/4
 				yto[i] = (skinheight/2)
@@ -217,7 +219,7 @@ function update_vertical()
 			end
 		else for i=(r*column)+1, math.min((r+1)*column,show) do
 			if direction < 0 then yr = space else yr=start-height end
-			yr = yr- ((expand-1)*width)/2*direction-(width+space)*(row-r)*direction 
+			yr = yr - text_w*direction/2 - ((expand-1)*width)/2*direction-(width+space)*(row-r)*direction 
 			if i <= hide then
 				xto[i] = start + width*direction/4
 				yto[i] = (skinheight/2)
@@ -398,7 +400,8 @@ function rename_icon(i,n)
 	end
 end
 
-function interact(index)
+function interact(index,dismiss)
+	if dismiss == nul then dismiss = 1 end
 	if edit == 1 and index <= count then
 		if swap == 0 then select=index else select=0 end
 		update()
@@ -424,10 +427,13 @@ function interact(index)
 	else
 		SKIN:Bang('"'..command..'"')
 	end
-	subroutine_end()
-	highlight(0)
-	if hideicon == 1 then set_state(2) end
-	SKIN:Bang("!CommandMeasure", "Animation", "Execute 9")
+	if tonumber(dismiss) == 0 then SKIN:Bang("!ZPos", 2) end
+	if hideicon == 1 and tonumber(dismiss) == 1 then
+		highlight(0)
+		subroutine_end()
+		set_state(2)
+		SKIN:Bang("!CommandMeasure", "Animation", "Execute 9")
+	end
 end
 
 function swap_icon(a,b)
@@ -521,9 +527,9 @@ function subroutine_init()
 		elseif d==2 then
 			SKIN:Bang("!Move", skinx-(skinwidth/2), skiny-space)
 		elseif d==3 then
-			SKIN:Bang("!Move", skinx-skinwidth+space, skiny-(skinheight/2))
+			SKIN:Bang("!Move", skinx-skinwidth+space + text_w/2, skiny-(skinheight/2))
 		else
-			SKIN:Bang("!Move", skinx-space, skiny-(skinheight/2))
+			SKIN:Bang("!Move", skinx-space - text_w/2, skiny-(skinheight/2))
 		end
 	SKIN:Bang("!WriteKeyValue", "Variables", "is_subroutine", 2, "#CURRENTPATH#\\#CURRENTFILE#")
 	end
@@ -532,6 +538,7 @@ end
 function subroutine_end()
 	if edit == 1 then return end
 	if tonumber(SKIN:GetVariable('is_subroutine')) > 0 then
+		SKIN:Bang("!ZPos", 0)
 		SKIN:Bang("!Clickthrough",1)
 		local parent=SKIN:GetVariable("Parent")
 		SKIN:Bang("!CommandMeasure", "Animate", "timer('resume')", parent)

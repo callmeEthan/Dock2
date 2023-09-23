@@ -3,12 +3,11 @@ OnRefreshAction=[!CommandMeasure Animate "set_state(0)"][!ShowMeter Background]
 MouseOverAction=[!CommandMeasure Animate "set_state(1)"]
 MouseLeaveAction=[!CommandMeasure Animate "highlight(0)"][!CommandMeasure Animate "timer('set')"]
 Update=-1
-SkinWidth=((#direction#=3)  || (#direction#=4) ? ((ceil(#TotalGame#/#column#)+#Expand#-1)*#size#+(#space#*ceil(#TotalGame#/#column#)) ) : ((min(#TotalGame#,#column#)+#Expand#-0.5)*(#size#+#space#) ))
+SkinWidth=((#direction#=3)  || (#direction#=4) ? (#TextW#+(ceil(#TotalGame#/#column#)+#Expand#-1)*#size#+(#space#*ceil(#TotalGame#/#column#) )) : (#TextW#+(min(#TotalGame#,#column#)+#Expand#-0.5)*(#size#+#space#) ))
 SkinHeight=((#direction#=3) || (#direction#=4) ? ((min(#TotalGame#,#column#)+#Expand#-0.5)*(#size#+#space#) ) : ((ceil(#TotalGame#/#column#)+#Expand#-1)*#size#+#TextY#+(#space#*ceil(#TotalGame#/#column#)) ) )
 ;BackgroundMode=2
 ;SolidColor=255,0,0,200
 DynamicWindowSize=0
-
 
 RightMouseUpAction=!Execute [!SkinCustomMenu]
 ContextTitle=Toggle edit
@@ -20,13 +19,17 @@ ContextAction3=[!CommandMeasure "Animate" "remove_icon()"]
 ContextTitle4=Rename icon
 ContextAction4=[!CommandMeasure "Animate" "rename_icon()"]
 ContextTitle5=---
-ContextTitle6=Setting file
-ContextAction6=["#CURRENTPATH#\Settings.inc"]
-ContextTitle7=List file
-ContextAction7=["#Applist#"]
-ContextTitle8=---
-ContextTitle9=Rainmeter Menu
-ContextAction9=[!SkinMenu]
+ContextTitle6=Global Setting file
+ContextAction6=["#@#\Global.Settings.inc"]
+ContextTitle7=Setting file
+ContextAction7=["#CURRENTPATH#\Settings.inc"]
+ContextTitle8=List file
+ContextAction8=["#Applist#"]
+ContextTitle9=---
+ContextTitle10=Update meter && hotkeys
+ContextAction10=[!WriteKeyValue "Variables" "update_list" "1" "#@#\\Global.Settings.inc"][!Refresh]
+ContextTitle11=Rainmeter Menu
+ContextAction11=[!SkinMenu]
 
 [Variables]
 Edit_mode=0
@@ -35,16 +38,15 @@ by=0
 bw=0
 bh=0
 
-
 [ScriptRepeatIcon]
 Measure=Script
 ScriptFile=#@#RepeatSection.lua
 ReadFile=#@#Style\grid_layout.inc
-WriteFile=#@#Style\grid_meter.inc
+HotkeyFile=#@#Style\hotkey_layout.inc
+WriteFile=#CURRENTPATH#\meter.inc
 Sub=Repeat
 Index=1
 Limit=(#TotalGame#)
-
 
 [LayoutIcon]
 Meter=Image
@@ -80,11 +82,17 @@ MouseOverAction=[!CommandMeasure Animate "set_state(1)"]
 UpdateDivider=-1
 Hidden=1
 
-[MeterBackground]
-Meter=Shape
-Shape=Rectangle #bx#, #by#, #bw#, #bh#,(#size#/2)| Fill Color #background# | Stroke Color 0,0,0,0
-DynamicVariables=1  
-Hidden=1
+[MeterLock]
+meter=Image
+ImageName=#@#lock.png
+X=(#bx#+#bw#-6)
+Y=(#by#-24)
+W=24
+H=24
+ImageTint=255,255,255,64
+LeftMouseUpAction=!Execute [!CommandMeasure Animate "toggle_lock()"]
+DynamicVariables=1
+Group=Icons
 
 [DragNDropParent]
 Measure=Plugin
@@ -117,10 +125,10 @@ StateUpdate=[!CommandMeasure Animate "update_state()"]
 TimerExec=[!CommandMeasure "Animate" "timer('timeout')"]
 Init=[!CommandMeasure "Animate" "show_more()"]
 Hide=[!CommandMeasure Animate "set_state(2)"]
-Draw=[!CommandMeasure "Animate" "animate()"][!UpdateMeterGroup "Icons"][!UpdateMeasureGroup "DropGroup"][!UpdateMeasureGroup "Extention"][!UpdateMeter "MeterBackground"][!Redraw]
+Draw=[!CommandMeasure "Animate" "animate()"][!UpdateMeterGroup "Icons"][!UpdateMeasureGroup "DropGroup"][!UpdateMeasureGroup "Extention"][!UpdateMeterGroup "Background"][!UpdateMeterGroup "Header"][!Redraw]
 DropImage=[xcopy "#File#" "#Directory#" /y][!WriteKeyValue Variables "Gamecover#Edit#" "#Filename#" "#Applist#"][!SetVariable Gamecover#Edit# #Filename#][!Delay 1000][!SetOption MeterTitle Text "Image added" "#ROOTCONFIG#\Debug"][!SetOption MeterContext Text "#File#" "#ROOTCONFIG#\Debug"][!Delay 500][!UpdateMeterGroup "Icons"][!Redraw]
 DropFile=[!WriteKeyValue Variables "Gamedir#Edit#" """["#File#"]""" "#Applist#"][!SetVariable "Gamedir#Edit#" "#File#"][!SetOption MeterTitle Text "Directory added" "#ROOTCONFIG#\Debug"][!SetOption MeterContext Text "#File#" "#ROOTCONFIG#\Debug"]
 Lock=[!HideMeter "Background"][!ClickThrough 1]
-Unlock=[!ShowMeter "Background"][!ClickThrough #is_subroutine#]
+Unlock=[!ShowMeter "Background"][!ClickThrough #is_subroutine#][!ZPos 0]
 SubroutineEnd=[!CommandMeasure "Animate" "subroutine_end()"]
-End=[!Delay (#animspd_exit#*#update_rate#)][!DeactivateConfig "#CURRENTCONFIG#"]
+End=[!Delay ((#animspd_exit#*#TotalGame#*2)+#update_rate#)][!DeactivateConfig "#CURRENTCONFIG#"]

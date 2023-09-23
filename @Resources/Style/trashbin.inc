@@ -1,24 +1,20 @@
 [Variables]
 Bin_index=0
-trashbin=shell:RecycleBinFolder										
+trashbin=shell:RecycleBinFolder		
+trashbin_alt=[!CommandMeasure "TrashBinUpdate" "Execute 2"]
+trashbin_max=100
 
 [TrashBinLua]
 Measure=Script
 ScriptFile=#@#Style\trashbin.lua
 DynamicVariables=1
 
-
-
 [TrashBinCount]
-Measure=Plugin
-Plugin=RecycleManager.dll
+Measure=RecycleManager
 RecycleType=Count
 Drives=All
-IfCondition=TrashBinCount > 0
 DynamicVariables=1
-IfTrueAction=[!SetVariable "Gamecover#Bin_index#" "trashbin.png"][!UpdateMeterGroup "Icons"][!Redraw]
-IfFalseAction=[!SetVariable "Gamecover#Bin_index#" "trashbin_empty.png"][!UpdateMeterGroup "Icons"][!Redraw]
-
+OnUpdateAction=[!CommandMeasure "TrashBinLua" "trashbin_check([TrashBinCount])"]
 
 [DragNDropTrashChild]
 Measure=Plugin
@@ -39,4 +35,7 @@ DynamicVariables=1
 Measure=Plugin
 Plugin=ActionTimer
 ActionList1= Wait 1000 | Update
-Update=[!UpdateMeasure TrashBinCount][!CommandMeasure "TrashBinUpdate" "Execute 1]
+ActionList2= ClearBin | Repeat UpdateIntensify, 100, 30 | Update
+Update=[!UpdateMeasure TrashBinCount][!CommandMeasure "TrashBinUpdate" "Execute 1"]
+ClearBin=[!CommandMeasure "TrashBinUpdate" "Stop 1"][!CommandMeasure TrashBinCount EmptyBin]
+UpdateIntensify=[!UpdateMeasure TrashBinCount]

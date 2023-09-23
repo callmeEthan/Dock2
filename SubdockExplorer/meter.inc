@@ -107,3 +107,36 @@ OnDropAction=[!SetVariable File "$File$"][!CommandMeasure Animate "drop_file(5)"
 Group=DropGroup
 Bounds = Icon5
 Disabled=1
+
+[Hotkey1]
+Measure=Plugin
+Plugin=HotKey
+HotKey=S
+KeyDownAction=[!CommandMeasure "Animate" "hotkey(5)"]
+
+[Hotkey2]
+Measure=Plugin
+Plugin=HotKey
+HotKey=R
+KeyDownAction=[!CommandMeasure "Animate" "hotkey(4)"]
+
+[Hotkey3]
+Measure=Plugin
+Plugin=HotKey
+HotKey=E
+KeyDownAction=[!CommandMeasure "Animate" "hotkey(3)"]
+
+[Hotkey4]
+Measure=Plugin
+Plugin=HotKey
+HotKey=D
+KeyDownAction=[!CommandMeasure "Animate" "hotkey(2)"]
+
+[Hotkey5]
+Measure=Plugin
+Plugin=HotKey
+HotKey=M
+KeyDownAction=[!CommandMeasure "Animate" "hotkey(1)"]
+
+[Variables]
+HotkeyCount=5

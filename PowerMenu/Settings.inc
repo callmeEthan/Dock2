@@ -4,7 +4,6 @@ style=grid
 space=10
 ;space between icon, if other than 0 the icon will fix in their position
 
-
 background=10,10,15,256
 ;Background color, delete this line remove background
 
@@ -31,7 +30,7 @@ autohide=1
 timeout=1000
 ;Timeout for autohide
 
-cooldown=1000
+cooldown=2000
 ; Cooldown after click on an icon
 
 column=3

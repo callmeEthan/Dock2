@@ -74,19 +74,55 @@ function Initialize()
 		end
 	end
 	SKIN:Bang("!Clickthrough",1)
-	SKIN:Bang("!ZPos", 1)
+	SKIN:Bang("!ZPos", SKIN:GetVariable("position"))
 	bkg=SKIN:GetVariable("background")
+	bkg_hide=0
 	if bkg~=nil then
 		SKIN:Bang("!ShowMeter", "MeterBackground")
 		bkgwidth=SKIN:GetVariable("background_width",width)
 	end
+	last_submenu=nil
+	check_edge_activate()
 	update_state()
+	enable_hotkey = tonumber(SKIN:GetVariable('enable_hotkey',0))
+	hotkey_count = tonumber(SKIN:GetVariable('HotkeyCount',0))
+	if enable_hotkey == 0 then SKIN:Bang("!CommandMeasure", "HotkeyMain", "Stop") end
+	log("Hotkey found: "..hotkey_count)
 end
 
 function log(x)
 	SKIN:Bang("!Log", x)
 end
 
+function check_edge_activate()
+	local edge = tonumber(SKIN:GetVariable('edge_activate',0))
+	if edge == 0 then return end
+	if vertical == 0 then
+		if direction==1 then
+			log("Edge activate: bottom edge")
+			SKIN:Bang("!SetOption", "Background", "Y", "(#CURRENTCONFIGHEIGHT#-"..edge..")")
+			SKIN:Bang("!SetOption", "Background", "H", edge)
+			SKIN:Bang("!UpdateMeter", "Background")
+		else
+			log("Edge activate: top edge")
+			SKIN:Bang("!SetOption", "Background", "Y", "0")
+			SKIN:Bang("!SetOption", "Background", "H", edge)
+			SKIN:Bang("!UpdateMeter", "Background")
+		end
+	else
+		if direction==1 then
+			log("Edge activate: right edge")
+			SKIN:Bang("!SetOption", "Background", "X", "(#CURRENTCONFIGWIDTH#-"..edge..")")
+			SKIN:Bang("!SetOption", "Background", "W", edge)
+			SKIN:Bang("!UpdateMeter", "Background")
+		else
+			log("Edge activate: left edge")
+			SKIN:Bang("!SetOption", "Background", "X", "0")
+			SKIN:Bang("!SetOption", "Background", "W", edge)
+			SKIN:Bang("!UpdateMeter", "Background")
+		end
+	end
+end
 
 function animate()
 	for i=1, show do
@@ -127,6 +163,19 @@ function animate()
 			SKIN:Bang("!SetVariable", "bw", bkgwidth)
 			SKIN:Bang("!SetVariable", "bh", bw)
 		end
+		if bw<1 and bkg_hide==0 then
+			SKIN:Bang("!HideMeterGroup","Background")
+			bkg_hide=1
+		elseif bw>1 and bkg_hide==1 then
+			SKIN:Bang("!ShowMeterGroup","Background")
+			bkg_hide=0
+		end
+	end
+end
+
+function animate_end()
+	if state == 2 then
+		SKIN:Bang("!ZPos", SKIN:GetVariable("position"))
 	end
 end
 
@@ -184,13 +233,27 @@ end
 
 function set_state(i)
 	if edit == 1 then return end
-	if i == 1 then	SKIN:Bang("!CommandMeasure", "Animation", "Stop 2") end
+	if i == 1 then 
+		SKIN:Bang("!CommandMeasure", "Animation", "Stop 2")
+		activate_hotkey()
+		else
+		deactivate_hotkey()
+	end
 	if state ~= 0 and state ~=i then
 		state = i
 		update_state()
 		SKIN:Bang("!CommandMeasure", "Animation", "Stop 3")
 		SKIN:Bang("!CommandMeasure", "Animation", "Stop 4")
 		SKIN:Bang("!CommandMeasure", "Animation", "Stop 5")
+	end
+	if state == 2 then
+		SKIN:Bang("!ClickThroughGroup", "Icons", 1)
+		SKIN:Bang("!ClickThroughGroup", "Background", 1)
+		SKIN:Bang("!ClickThroughGroup", "DropGroup", 1)
+	else
+		SKIN:Bang("!ClickThroughGroup", "Icons", 0)
+		SKIN:Bang("!ClickThroughGroup", "Background", 0)
+		SKIN:Bang("!ClickThroughGroup", "DropGroup", 0)
 	end
 end
 
@@ -204,6 +267,7 @@ function update_state()
 			SKIN:Bang("!Clickthrough",0)
 			timer("set")
 			state=1
+			activate_hotkey()
 		end
 	elseif state == 1 then
 		if hide > 0 then
@@ -219,8 +283,6 @@ function update_state()
 		end
 	end
 end
-
-
 
 function update()
 	if vertical == 1 then update_vertical() else update_horizonal() end
@@ -342,7 +404,8 @@ function toggle_edit(c)
 		SKIN:Bang("!DisableMeasureGroup", "DropGroup")
 		SKIN:Bang("!HideMeter","Icon"..count+1)
 		SKIN:Bang("!DeactivateConfig", "#ROOTCONFIG#\\Debug")
-		update()
+		if enable_hotkey then SKIN:Bang("!Refresh")
+		else update() end
 	end
 end	
 
@@ -376,6 +439,9 @@ function add_icon(ico)
 	else
 	SKIN:Bang("!WriteKeyValue", "Variables", 'Gamecover'..count+1, ico, "#Applist#")
 	end
+	SKIN:Bang("!WriteKeyValue", "Variables", 'Gamedir'..count+1, '', "#Applist#")
+	SKIN:Bang("!WriteKeyValue", "Variables", 'Gamename'..count+1, 'New icon', "#Applist#")
+	SKIN:Bang("!WriteKeyValue", "Variables", "update_list", 1, "#@#\\Global.Settings.inc")
 	if edit == 1 then SKIN:Bang("!DeactivateConfig", "#ROOTCONFIG#\\Debug") end
 	SKIN:Bang("!Refresh")
 end
@@ -384,10 +450,13 @@ function remove_icon()
 	for i=edit_entry, count-1 do
 	local Gamecover=SKIN:GetVariable('Gamecover'..i+1)
 	local Gamedir=SKIN:GetVariable('Gamedir'..i+1)
+	local Gamename=SKIN:GetVariable('Gamename'..i+1)
 	SKIN:Bang("!WriteKeyValue", "Variables", 'Gamecover'..i, Gamecover, "#Applist#")
 	SKIN:Bang("!WriteKeyValue", "Variables", 'Gamedir'..i, Gamedir, "#Applist#")
+	SKIN:Bang("!WriteKeyValue", "Variables", 'Gamename'..i, Gamename, "#Applist#")
 	end
 	SKIN:Bang("!WriteKeyValue", "Variables", 'TotalGame', count-1, "#Applist#")
+	SKIN:Bang("!WriteKeyValue", "Variables", "update_list", 1, "#@#\\Global.Settings.inc")
 	if edit == 1 then SKIN:Bang("!DeactivateConfig", "#ROOTCONFIG#\\Debug") end
 	SKIN:Bang("!Refresh")
 end
@@ -406,6 +475,7 @@ function rename_icon(i,n)
 		SKIN:Bang("!UpdateMeterGroup", "Icons")
 		SKIN:Bang("!Redraw")
 	end
+	if enable_hotkey==1 then SKIN:Bang("!WriteKeyValue", "Variables", "update_list", 1, "#@#\\Global.Settings.inc") end
 end
 
 function interact(index,dismiss)
@@ -419,8 +489,11 @@ function interact(index,dismiss)
 	return end
 
 	local command=SKIN:GetVariable('Gamedir'..index)
-
 	if string.match(command, 'switch:') then 
+		command = string.sub(command,8)
+		SKIN:Bang(command)
+		return
+	elseif string.match(command, 'folder:') then 
 		command = string.sub(command,8)
 		SKIN:Bang(command)
 		return
@@ -432,14 +505,29 @@ function interact(index,dismiss)
 		sub_menu(command,index)
 		return
 	elseif string.match(command, 'function:') then 
-		command = string.sub(command,10)
-		SKIN:Bang(SKIN:GetVariable(command))
+		if dismiss == 0 then 
+			command = string.sub(command,10)
+			local alt = SKIN:GetVariable(command.."_alt",nil)
+			if alt ~= nil then
+				SKIN:Bang(alt)
+				dismiss = 1
+			else
+				SKIN:Bang(SKIN:GetVariable(command))
+			end
+		else
+			command = string.sub(command,10)
+			SKIN:Bang(SKIN:GetVariable(command))
+		end
 	elseif string.match(command, '%[') then
 		SKIN:Bang(command)
 	else
 		SKIN:Bang('"'..command..'"')
 	end
-	if tonumber(dismiss) == 0 then SKIN:Bang("!ZPos", 2) end
+	if tonumber(dismiss) == 0 then
+		SKIN:Bang("!ZPos", 2)
+		set_state(1)
+		timer("set")
+		end
 	if hideicon == 1 and tonumber(dismiss) == 1 then
 		highlight(0)
 		subroutine_end()
@@ -451,12 +539,13 @@ end
 function gamehub(cfg)
 	highlight(0)
 	if tonumber(dismiss) == 0 then SKIN:Bang("!ZPos", 2) end
-	if hideicon == 1 and tonumber(dismiss) == 1 then
+	if hideicon == 1 then
 		subroutine_end()
 		set_state(2)
 		SKIN:Bang("!CommandMeasure", "Animation", "Execute 9")
+	else
+		SKIN:Bang("!CommandMeasure", "Animation", "Execute 13")
 	end
-	SKIN:Bang("!CommandMeasure", "Animation", "Execute 13")
 	SKIN:Bang("!WriteKeyValue", "Variables", "filelayout", "page_game.inc", "#SKINSPATH#\\GameHub 2\\@Resources\\Settings.inc")
 	SKIN:Bang("!ActivateConfig", "GameHub 2", "GameHUB.ini")
 end
@@ -474,23 +563,25 @@ function swap_icon(a,b)
 
 	SKIN:Bang("!WriteKeyValue", "Variables", "Gamecover"..a, SKIN:GetVariable("Gamecover"..b), SKIN:GetVariable("Applist"))
 	SKIN:Bang("!WriteKeyValue", "Variables", "Gamedir"..a, SKIN:GetVariable("Gamedir"..b), SKIN:GetVariable("Applist"))
-	if temp_name~=nul then SKIN:Bang("!WriteKeyValue", "Variables", "Gamename"..a, SKIN:GetVariable("Gamename"..b), SKIN:GetVariable("Applist")) end
+	SKIN:Bang("!WriteKeyValue", "Variables", "Gamename"..a, SKIN:GetVariable("Gamename"..b), SKIN:GetVariable("Applist"))
 
 	SKIN:Bang("!WriteKeyValue", "Variables", "Gamecover"..b, SKIN:GetVariable("Gamecover"..a), SKIN:GetVariable("Applist"))
 	SKIN:Bang("!WriteKeyValue", "Variables", "Gamedir"..b, SKIN:GetVariable("Gamedir"..a), SKIN:GetVariable("Applist"))
-	if temp_name~=nul then SKIN:Bang("!WriteKeyValue", "Variables", "Gamename"..b, SKIN:GetVariable("Gamename"..a), SKIN:GetVariable("Applist")) end
+	SKIN:Bang("!WriteKeyValue", "Variables", "Gamename"..b, SKIN:GetVariable("Gamename"..a), SKIN:GetVariable("Applist"))
 
 	SKIN:Bang('!SetVariable', 'Gamecover'..b, SKIN:GetVariable('Gamecover'..a))
 	SKIN:Bang('!SetVariable', 'Gamedir'..b, SKIN:GetVariable('Gamedir'..a))
-	if temp_name~=nul then SKIN:Bang('!SetVariable', 'Gamename'..b, SKIN:GetVariable('Gamename'..a)) end
+	SKIN:Bang('!SetVariable', 'Gamename'..b, SKIN:GetVariable('Gamename'..a))
 
 	SKIN:Bang('!SetVariable', 'Gamecover'..a, temp_icon)
 	SKIN:Bang('!SetVariable', 'Gamedir'..a, temp_dir)
-	if temp_name~=nul then SKIN:Bang('!SetVariable', 'Gamename'..a, temp_name) end
+	SKIN:Bang('!SetVariable', 'Gamename'..a, temp_name)
+
 	SKIN:Bang("!SetOption", "MeterTitle", "Text", "Icon select", "#ROOTCONFIG#\\Debug")
 	SKIN:Bang("!SetOption", "MeterContext", "Text", "Icon position swapped#CRLF#Drag and drop file or image into the icons, Press (+) to add icon", "#ROOTCONFIG#\\Debug")
 	update()
 	swap=0
+	if enable_hotkey==1 then SKIN:Bang("!WriteKeyValue", "Variables", "update_list", 1, "#@#\\Global.Settings.inc") end
 end
 
 function sub_menu(command,index)
@@ -500,17 +591,22 @@ function sub_menu(command,index)
 		command = command:gsub('%b[]', '')
 		cfg = s
 	end
-	SKIN:Bang('!SetVariable', 'check_config' , '#ROOTCONFIG#\\'.. string.sub (command, 9))
+	SKIN:Bang('!SetVariable', 'check_config' , '#ROOTCONFIG#\\'.. string.sub(command, 9))
 	SKIN:Bang('!UpdateMeasure', 'ActiveConfig')
 	is_active = ConfigMeasure:GetValue()
 	if is_active == 1 then return end
-
-	SKIN:Bang("!WriteKeyValue", "Variables", "is_subroutine", "1", string.sub (command, 9) .. "\\"..cfg)
-	SKIN:Bang("!WriteKeyValue", "Variables", "Parent", "#CURRENTCONFIG#", string.sub (command, 9) .. "\\"..cfg)
-	SKIN:Bang("!WriteKeyValue", "Variables", "direction", SKIN:GetVariable('direction'), string.sub (command, 9) .. "\\Settings.inc")
-	SKIN:Bang("!ActivateConfig","#ROOTCONFIG#\\".. string.sub (command, 9), cfg)
+	SKIN:Bang("!WriteKeyValue", "Variables", "subroutine_index", index, string.sub(command, 9) .. "\\"..cfg)
+	SKIN:Bang("!WriteKeyValue", "Variables", "is_subroutine", "1", string.sub(command, 9) .. "\\"..cfg)
+	SKIN:Bang("!WriteKeyValue", "Variables", "Parent", "#CURRENTCONFIG#", string.sub(command, 9) .. "\\"..cfg)
+	SKIN:Bang("!WriteKeyValue", "Variables", "direction", SKIN:GetVariable('direction'), string.sub(command, 9) .. "\\Settings.inc")
+	SKIN:Bang("!ActivateConfig","#ROOTCONFIG#\\".. string.sub(command, 9), cfg)
 	local xstart = 0
 	local ystart = 0
+	if last_submenu~=nil then
+		if last_submenu~="#ROOTCONFIG#\\".. string.sub(command, 9) then
+		SKIN:Bang("!CommandMeasure","Animate","timer('timeout')",last_submenu) end
+	end
+	last_submenu="#ROOTCONFIG#\\".. string.sub(command, 9)
 	local d=tonumber(SKIN:GetVariable('direction'))
 	if d==1 then
 		xstart=SKIN:GetVariable('CURRENTCONFIGX') + xto[index] + width*expand/2
@@ -550,6 +646,7 @@ function sub_menu(command,index)
 	SKIN:Bang("!ClickThrough", "1")
 	highlight(0)
 	set_state(2)
+	SKIN:Bang("!CommandMeasure", "Animation", "Stop 9")
 	SKIN:Bang("!CommandMeasure", "Animation", "Execute 10")
 	end
 end
@@ -595,5 +692,40 @@ function timer(c)
 	elseif c=="resume" and focus==1 then
 		SKIN:Bang("!CommandMeasure", "Animation", "Execute 9")
 		if hideicon == 0 then set_state(1) end
+	end
+end
+
+function activate_hotkey()
+	for i=1, hotkey_count do
+		SKIN:Bang("!CommandMeasure", "Hotkey"..i, "Start")
+	end
+	if hideicon == 0 then SKIN:Bang("!CommandMeasure", "Animation", "Execute 16") end
+end
+
+function deactivate_hotkey()
+	for i=1, hotkey_count do
+		SKIN:Bang("!CommandMeasure", "Hotkey"..i, "Stop")
+	end
+end
+
+function hotkey(index)
+	if focus == 0 then return end
+	if tonumber(SKIN:GetVariable('Lock'))==1 then return end
+	index = tonumber(index)
+	if index == 0 then
+		if hideicon == 1 then
+			if state ~= 2 then return end
+			SKIN:Bang("!ZPos", 2)
+			set_state(1)
+			timer('set')
+			SKIN:Bang("!CommandMeasure", "Animation", "Execute 15")
+		else
+			activate_hotkey()
+			SKIN:Bang("!CommandMeasure", "Animation", "Stop 2")
+			SKIN:Bang("!CommandMeasure", "Animation", "Execute 16")
+			SKIN:Bang("!ZPos", 2)
+		end
+	else
+		interact(index, 0)
 	end
 end

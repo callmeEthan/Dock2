@@ -8,8 +8,8 @@ divider=5
 ;how slow animation calculation should be (increase to make animation longer)
 
 animspd_init=150
-animspd_enter=20
-animspd_exit=20
+animspd_enter=15
+animspd_exit=25
 ;Speed for various animation
 
 step=24
@@ -18,10 +18,10 @@ step=24
 expand=2
 ;how big icon expand when highlighted (size multiplier)
 
-autohide=0
+autohide=1
 ;Whether to hide icon after period of time
 
-timeout=1500
+timeout=2000
 ;Timeout for autohide
 
 cooldown=500
@@ -32,3 +32,6 @@ column=2
 
 position = 0
 ;Skin position on screen, set to 2 will make the dock stay topmost
+
+edge_activate = 2
+;Reduce activate area (when autohide is true) to X amount of pixel, set to 0 for full area activate

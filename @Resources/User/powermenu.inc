@@ -1,24 +1,17 @@
 [Variables]
-TotalGame=5
+Title=Power
+TotalGame=3
 Directory=#@#App\
 
 Gamecover1=shutdown.png
-Gamedir1=[!CommandMeasure "ShutdownScript" "shutdown()"]
+Gamedir1=submenu:ShutdownTimer
 Gamename1=Shutdown
 
-Gamecover2=hibernate.png
-Gamedir2=[!CommandMeasure "ShutdownScript" "hibernate()"]
-Gamename2=Sleep
+Gamecover2=restart.png
+Gamedir2=[!CommandMeasure "ShutdownScript" "restart()"]
+Gamename2=Restart
 
-Gamecover3=restart.png
-Gamedir3=[!CommandMeasure "ShutdownScript" "restart()"]
-Gamename3=Restart
-
-Gamecover4=timer_add.png
-Gamedir4=switch:[!CommandMeasure "ShutdownScript" "timer_increase()"]
-Gamename4=Timer +
-
-Gamecover5=timer_minus.png
-Gamedir5=switch:[!CommandMeasure "ShutdownScript" "timer_decrease()"]
-Gamename5=Timer -
+Gamecover3=sleep.png
+Gamedir3=[!CommandMeasure "ShutdownScript" "hibernate()"]
+Gamename3=Sleep
 

@@ -1,11 +1,12 @@
 function Initialize()
-	timer = 10
+	timer = 5
 	text = ""
+	header = SKIN:GetVariable('Title','')
 end
 
 function shutdown()
 	SKIN:Bang("%systemroot%\system32\shutdown.exe -s -t "..timer)
-	SKIN:Bang("!ActivateConfig", "#ROOTCONFIG#\Debug", "shutdown_cancel.ini")
+	SKIN:Bang("!ActivateConfig", "#ROOTCONFIG#\\Debug", "shutdown_cancel.ini")
 end
 
 function timer_increase()
@@ -29,37 +30,41 @@ function timer_decrease()
 	elseif timer > 60 then
 		timer = timer - 60
 	else
-		timer = 10
+		timer = 5
 	end
 	timer_display()
 end
 
 function timer_display()
+	local context=''
 	if timer > 3600 then
-		SKIN:Bang("!SetOption", "TimerMeter", "Text", timer/3600 .. " hours")
+		context = timer/3600 .. " hours"
 	elseif timer == 3600 then
-		SKIN:Bang("!SetOption", "TimerMeter", "Text", timer/3600 .. " hour")
+		context = timer/3600 .. " hour"
 	elseif timer > 60 then
-		SKIN:Bang("!SetOption", "TimerMeter", "Text", timer/60 .. " minutes")
+		context = timer/60 .. " minutes"
 	elseif timer == 60 then
-		SKIN:Bang("!SetOption", "TimerMeter", "Text", timer/60 .. " minute")
+		context = timer/60 .. " minute"
 	elseif timer == 10 then
-		SKIN:Bang("!SetOption", "TimerMeter", "Text", "10 second (default)")
+		context = "10 second (default)"
 	else
-		SKIN:Bang("!SetOption", "TimerMeter", "Text", timer.." seconds")
+		context = timer.." seconds"
 	end
-	SKIN:Bang("!ShowMeter", "TimerMeter")
-	SKIN:Bang("!UpdateMeter","TimerMeter")
+	SKIN:Bang("!SetVariable","Title",header .. ": "..context)
+--	SKIN:Bang("!UpdateMeter","Header")
+--	SKIN:Bang("!UpdateMeter","HeaderBackground")
+	SKIN:Bang("!UpdateMeterGroup","Header")
+	SKIN:Bang("!UpdateMeterGroup","Background")
 	SKIN:Bang("!Redraw")
 end
 
 function shutdown()
-	SKIN:Bang("%systemroot%\\system32\\shutdown.exe /s /t "..timer)
+	SKIN:Bang("%systemroot%\\system32\\shutdown.exe /s /f /t "..timer)
 	SKIN:Bang("!ActivateConfig", "#ROOTCONFIG#\\Debug", "shutdown_cancel.ini")
 end
 
 function restart()
-	SKIN:Bang("%systemroot%\\system32\\shutdown.exe /r /t "..timer)
+	SKIN:Bang("%systemroot%\\system32\\shutdown.exe /r /t 10")
 	SKIN:Bang("!ActivateConfig", "#ROOTCONFIG#\\Debug", "shutdown_cancel.ini")
 end
 

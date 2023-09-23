@@ -28,7 +28,7 @@ padding=8
 autohide=1
 ;Whether to hide icon after period of time
 
-timeout=1000
+timeout=2000
 ;Timeout for autohide
 
 cooldown=1000

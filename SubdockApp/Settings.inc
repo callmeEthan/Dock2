@@ -25,7 +25,7 @@ autohide=1
 timeout=1000
 ;Timeout for autohide
 
-cooldown=1000
+cooldown=2000
 ; Cooldown after click on an icon
 
 column=4

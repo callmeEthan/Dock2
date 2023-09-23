@@ -1,14 +1,12 @@
 [Rainmeter]
 OnRefreshAction=[!CommandMeasure Animate "set_state(0)"][!ShowMeter Background]
-MouseOverAction=[!CommandMeasure Animate "set_state(1)"]
-MouseLeaveAction=[!CommandMeasure Animate "highlight(0)"][!CommandMeasure Animate "timer('set')"]
+MouseLeaveAction=[!CommandMeasure Animate "highlight(0)"][!CommandMeasure Animate "timer('set')"][!CommandMeasure Animation "Execute 15"]
 Update=-1
 SkinWidth=((#direction#=3)  || (#direction#=4) ? (#TextW#+#expand#*#size#) : (#TextW#+#TotalGame#*(#size#+#space#)+#expand#*#size#))
 SkinHeight=((#direction#=3) || (#direction#=4) ? (#TotalGame#*(#size#+#space#)+#expand#*#size#+#TextY#) : (#expand#*#size#+#TextY#))
 DynamicWindowSize=0
 ;BackgroundMode=2
 ;SolidColor=255,0,0,200
-
 
 RightMouseUpAction=!Execute [!SkinCustomMenu]
 ContextTitle=Toggle edit
@@ -30,10 +28,10 @@ ContextAction9=[!WriteKeyValue "Variables" "background" "245,245,245" "#@#Global
 ContextTitle10=Dark mode
 ContextAction10=[!WriteKeyValue "Variables" "background" "15,15,15" "#@#Global.Settings.inc"][!WriteKeyValue "Variables" "FontColor" "255,255,255" "#@#Global.Settings.inc"][!WriteKeyValue "Variables" "TextBackground" "0,0,0" "#@#Global.Settings.inc"][!Refresh]
 ContextTitle11=---
-ContextTitle12=Rainmeter Menu
-ContextAction12=[!SkinMenu]
-ContextTitle13=Normal Position
-ContextAction13=[!ZPos 0]
+ContextTitle12=Update meter && hotkeys
+ContextAction12=[!WriteKeyValue "Variables" "update_list" "1" "#@#\\Global.Settings.inc"][!Refresh]
+ContextTitle13=Rainmeter Menu
+ContextAction13=[!SkinMenu]
 
 [Variables]
 Edit_mode=0
@@ -41,17 +39,17 @@ bx=0
 by=0
 bw=0
 bh=0
-
+Lock=0
 
 [ScriptRepeatIcon]
 Measure=Script
 ScriptFile=#@#RepeatSection.lua
+HotkeyFile=#@#Style\hotkey_layout.inc
 ReadFile=#@#Style\classic_layout.inc
 WriteFile=#@#Style\classic_meter.inc
 Sub=Repeat
 Index=1
 Limit=(#TotalGame#+1)
-
 
 [LayoutIcon]
 Meter=Image
@@ -60,16 +58,6 @@ Y=(-#size#-#padding#)
 W=#size#
 H=#size#
 Padding=0,0,0,0
-AntiAlias=1
-PreserveAspectRatio=1
-SolidColor=0,0,0,1
-DynamicVariables=1
-Group=Icons
-
-[StyleIcon]
-Meter=Image
-W=#size#
-H=#size#
 AntiAlias=1
 PreserveAspectRatio=1
 SolidColor=0,0,0,1
@@ -85,12 +73,6 @@ H=#CURRENTCONFIGHEIGHT#
 SolidColor=0,0,0,1
 MouseOverAction=[!CommandMeasure Animate "set_state(1)"]
 UpdateDivider=-1
-Hidden=1
-
-[MeterBackground]
-Meter=Shape
-Shape=Rectangle #bx#, #by#, #bw#, #bh#,(#size#/7)| Fill Color #background# | Stroke Color 0,0,0,0
-DynamicVariables=1  
 Hidden=1
 
 [DragNDropParent]
@@ -109,12 +91,17 @@ Plugin=ConfigActive
 DynamicVariables=1
 ConfigName=#check_config#
 
+[ImageDisplay]
+Measure=Script
+ScriptFile=#@#Style\ImageDisplay.lua
+DynamicVariables=1
+
 [Animation]
 Measure=Plugin
 Plugin=ActionTimer
 Group=Animation
 DynamicVariables=1
-ActionList1= Repeat Draw, #update_rate#, #step#
+ActionList1= Repeat Draw, #update_rate#, #step# | AnimEnd
 ActionList2= Wait #timeout# | TimerExec
 ActionList3= Wait #animspd_init# | StateUpdate
 ActionList4= Wait #animspd_enter# | StateUpdate
@@ -127,15 +114,22 @@ ActionList10= Lock
 ActionList11= Unlock
 ActionList12= End
 ActionList13= ForceAnim
+ActionList14= LoadImage
+ActionList15= Wait 1000 | DismissImage
+ActionList16= Wait #timeout# | ResetPos
 StateUpdate=[!CommandMeasure Animate "update_state()"]
 TimerExec=[!CommandMeasure "Animate" "timer('timeout')"]
 Init=[!CommandMeasure "Animate" "show_more()"]
 Hide=[!CommandMeasure Animate "set_state(2)"]
-Draw=[!CommandMeasure "Animate" "animate()"][!UpdateMeterGroup "Icons"][!UpdateMeasureGroup "DropGroup"][!UpdateMeasureGroup "Extention"][!UpdateMeter "MeterBackground"][!UpdateMeter "MeterShadow"][!Redraw]
+Draw=[!CommandMeasure "Animate" "animate()"][!UpdateMeterGroup "Icons"][!UpdateMeasureGroup "DropGroup"][!UpdateMeasureGroup "Extention"][!UpdateMeterGroup "Background"][!Redraw]
 DropImage=[xcopy "#File#" "#Directory#" /y][!WriteKeyValue Variables "Gamecover#Edit#" "#Filename#" "#Applist#"][!SetVariable Gamecover#Edit# #Filename#][!Delay 1000][!SetOption MeterTitle Text "Image added" "#ROOTCONFIG#\Debug"][!SetOption MeterContext Text "#File#" "#ROOTCONFIG#\Debug"][!Delay 500][!UpdateMeterGroup "Icons"][!Redraw]
 DropFile=[!WriteKeyValue Variables "Gamedir#Edit#" """["#File#"]""" "#Applist#"][!SetVariable "Gamedir#Edit#" "#File#"][!SetOption MeterTitle Text "Directory added" "#ROOTCONFIG#\Debug"][!SetOption MeterContext Text "#File#" "#ROOTCONFIG#\Debug"]
-Lock=[!HideMeter "Background"][!ClickThrough 1]
-Unlock=[!ShowMeter "Background"][!ClickThrough #is_subroutine#][!ZPos 0]
+Lock=[!HideMeter "Background"][!ClickThrough 1][!SetVariable Lock 1]
+Unlock=[!ShowMeter "Background"][!ClickThrough #is_subroutine#][!SetVariable Lock 0]
 SubroutineEnd=[!CommandMeasure "Animate" "subroutine_end()"]
 End=[!Delay (#animspd_exit#*#update_rate#*#TotalGame#/2)][!DeactivateConfig "#CURRENTCONFIG#"]
 ForceAnim=[!CommandMeasure "Animate" "force_animate()"]
+LoadImage=[!CommandMeasure ImageDisplay "activate_config()"]
+DismissImage=[!CommandMeasure ImageDisplay "deactivate_config()"]
+ResetPos=[!ZPos #position#][!CommandMeasure "Animate" "deactivate_hotkey()"]
+AnimEnd=[!CommandMeasure "Animate" "animate_end()"]

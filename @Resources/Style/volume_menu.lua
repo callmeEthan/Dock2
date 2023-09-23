@@ -39,6 +39,7 @@ function subroutine_init()
 		hide_icon()
 	end
 	SKIN:Bang("!ShowMeter", "MeterIcon")
+	SKIN:Bang("!ShowMeterGroup", "Background")
 	SKIN:Bang("!Update")
 	SKIN:Bang("!WriteKeyValue", "Variables", "is_subroutine", 0, "#CURRENTPATH#\\#CURRENTFILE#")
 end
@@ -67,7 +68,7 @@ function hide_icon()
 end
 
 function mouse_press(x,y)
-	if SKIN:GetVariable("CURRENTFILE")=="VolumeBar.ini" then
+	if SKIN:GetVariable("CURRENTFILE")=="VolumeBar.ini" or SKIN:GetVariable("CURRENTFILE")=="VolumeW11.ini" then
 		if direction==1 then
 			local v=100-y
 			SKIN:Bang("!CommandMeasure", "MeasureWin7Audio", "SetVolume "..v)

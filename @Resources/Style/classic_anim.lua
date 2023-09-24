@@ -726,6 +726,7 @@ function hotkey(index)
 			SKIN:Bang("!ZPos", 2)
 		end
 	else
+		highlight(index)
 		interact(index, 0)
 	end
 end

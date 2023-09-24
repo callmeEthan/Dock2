@@ -618,6 +618,7 @@ function hotkey(index)
 	index = tonumber(index)
 	if index == 0 then return
 	else
+		highlight(index)
 		interact(index, 0)
 	end
 end

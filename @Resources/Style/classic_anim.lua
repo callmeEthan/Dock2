@@ -546,7 +546,7 @@ function gamehub(cfg)
 	else
 		SKIN:Bang("!CommandMeasure", "Animation", "Execute 13")
 	end
-	SKIN:Bang("!WriteKeyValue", "Variables", "filelayout", "page_game.inc", "#SKINSPATH#\\GameHub 2\\@Resources\\Settings.inc")
+	SKIN:Bang("!WriteKeyValue", "Variables", "filelayout", cfg, "#SKINSPATH#\\GameHub 2\\@Resources\\Settings.inc")
 	SKIN:Bang("!ActivateConfig", "GameHub 2", "GameHUB.ini")
 end
 
